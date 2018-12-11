@@ -1,6 +1,9 @@
+use petgraph::{Directed, graph::Graph};
 use serde_derive::{Serialize, Deserialize};
 use uom::si::f64::Frequency;
 
+
+pub type ClockTree = Graph<Node, (), Directed>;
 
 /// Used to represent a frequency value in the system.
 /// Value can either be a constant, an acceptable range or for endpoints
