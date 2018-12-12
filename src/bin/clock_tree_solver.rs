@@ -22,6 +22,8 @@ struct App {
     window: Window,
     /// Widgets contained in the window
     widgets: Widgets,
+    /// has changed 
+    has_changed: bool,
 }
 
 #[derive(Msg)]
@@ -47,7 +49,10 @@ impl Update for App {
     fn update(&mut self, event: Self::Msg) {
         match event {
             Message::Render => {
-                println!("Rendering");
+                if self.has_changed {
+                     
+                    self.has_changed = false;
+                }
             },
             Message::Quit => gtk::main_quit(),
             _ => {},
@@ -92,6 +97,10 @@ impl Widget for App {
                  connect_delete_event(_,_), 
                  return (Some(Message::Quit), Inhibit(false)));
 
+        connect!(relm, 
+                 da, 
+                 connect_draw(_,_), 
+                 return (Some(Message::Render), Inhibit(false)));
 
         window.show_all();
 
@@ -106,6 +115,7 @@ impl Widget for App {
                 calculate: calc,
                 diagram: handler,
             },
+            has_changed: true,
         }
     }
 }
