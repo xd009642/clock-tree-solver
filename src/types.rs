@@ -1,6 +1,8 @@
+use std::fmt;
+use std::hash::{Hash, Hasher};
 use petgraph::{Directed, graph::Graph};
 use serde_derive::{Serialize, Deserialize};
-use uom::si::f64::Frequency;
+use uom::si::{f64::Frequency, frequency::millihertz};
 
 
 pub type ClockTree = Graph<Node, (), Directed>;
@@ -8,7 +10,7 @@ pub type ClockTree = Graph<Node, (), Directed>;
 /// Used to represent a frequency value in the system.
 /// Value can either be a constant, an acceptable range or for endpoints
 /// where there's no desired value a Don't Care
-#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum Value {
     /// The desired frequency of the endpoint
     Constant(Frequency),
@@ -21,9 +23,31 @@ pub enum Value {
     DontCare,
 }
 
+impl Hash for Value {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        let mut float_hash = |x: f64| {
+            (x.round() as i32).hash(state);
+        };
+        match *self {
+            Value::Constant(ref f) => {
+                float_hash(f.get::<millihertz>());
+            },
+            Value::Range{ref min, ref max} => {
+                float_hash(min.get::<millihertz>());
+                float_hash(max.get::<millihertz>());
+            },
+            Value::DontCare => {
+                (-1i32).hash(state); 
+            }
+        }
+    }
+}
+
+impl Eq for Value {}
+
 /// Used to represent frequency sources and sinks.
 /// Each one is given a unique name
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Deserialize, Serialize)]
 pub struct Endpoint {
     /// Endpoint name
     pub name: String,
@@ -34,18 +58,32 @@ pub struct Endpoint {
 }
 
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Deserialize, Serialize)]
 pub enum Node {
     /// Division block. Divide input by one of the potential values
-    Divide(Vec<f64>),
+    Divide(Vec<u64>),
     /// Multiplication block. Multiply input by one of the potential values
-    Multiply(Vec<f64>),
+    Multiply(Vec<u64>),
     /// Mux block, takes a set of signals and lets one pass through
     Mux,
     /// Input frequency (internal or external)
     Input(Endpoint),
     /// Output frequency (internal or external)
     Output(Endpoint),
+}
+
+impl fmt::Display for Node {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Node::Divide(p) | Node::Multiply(p) => {
+                for x in p {
+                    writeln!(f, "{} ", x)?;
+                }
+            },
+            _ => {},
+        }
+        Ok(())
+    }
 }
 
 impl Node {
@@ -66,6 +104,7 @@ impl Node {
         }
     }
 }
+
 
 #[cfg(test)]
 mod tests {

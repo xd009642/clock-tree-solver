@@ -1,4 +1,5 @@
 use clock_solver::types::*;
+use clock_solver::graphics::*;
 
 use relm::{connect, connect_stream, DrawHandler, Relm, Update, Widget};
 use gtk::prelude::*;
@@ -50,7 +51,10 @@ impl Update for App {
         match event {
             Message::Render => {
                 if self.has_changed {
-                     
+                    let context = self.widgets.diagram.get_context();
+                    context.set_source_rgb(1.0, 1.0, 1.0);
+                    context.paint();
+                    self.model.render(&context, 0.0, 0.0, 400.0, 400.0);
                     self.has_changed = false;
                 }
             },

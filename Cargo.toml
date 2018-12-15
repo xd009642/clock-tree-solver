@@ -13,6 +13,7 @@ name = "clock-tree-solver"
 path = "src/bin/clock_tree_solver.rs"
 
 [dependencies]
+cairo-rs = { version = "^0.5.0" }
 gtk = { version = "^0.5.0" }
 petgraph = {version = "0.4", features = ["serde-1"]}
 relm = { version = "^0.15.0" }
