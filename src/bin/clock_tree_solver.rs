@@ -62,7 +62,7 @@ impl Update for App {
                     let context = self.widgets.diagram.get_context();
                     context.set_source_rgb(1.0, 1.0, 1.0);
                     context.paint();
-                    self.model.render(&context, 0.0, 0.0, width, height);
+                    self.model.render(&context, 0.0, 0.0, 400.0, 400.0);
                     self.has_changed = false;
                 }
             },

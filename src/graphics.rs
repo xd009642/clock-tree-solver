@@ -20,15 +20,20 @@ pub trait Symbol {
 /// Renders a node in the clock tree
 impl Symbol for Node {
     fn render(&self, ctx: &Context, x: f64, y: f64, width: f64, height: f64) {
+        ctx.set_source_rgb(0.0, 0.0, 0.0);
         match *self {
             Node::Mux => {
+                ctx.move_to(x, y);
+                ctx.line_to(x, y+height);
+                ctx.line_to(x+width, y + 0.8*height);
+                ctx.line_to(x+width, y + 0.2*height);
+                ctx.line_to(x, y);
             }, 
             _ => {
-                ctx.set_source_rgb(0.0, 0.0, 0.0);
                 ctx.rectangle(x, y, width, height);
-                ctx.stroke();
             },
         }
+        ctx.stroke();
     }
 }
 
@@ -63,7 +68,7 @@ impl Symbol for ClockTree {
         for n in self.node_indices() {
             if !nodes.contains_key(&n) {
                 if let Some(ref temp) = self.node_weight(n) {
-                    temp.render(ctx, width/2.0, height/2.0, 30.0, 30.0);
+                    temp.render(ctx, width/2.0, height/2.0, 0.05*width, end_height);
                 }
             }
         }
