@@ -1,9 +1,11 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
-use petgraph::{Directed, graph::Graph};
+use petgraph::{Directed, graph::{DefaultIx, Graph}};
 use serde_derive::{Serialize, Deserialize};
 use uom::si::{f64::Frequency, frequency::millihertz};
 
+
+pub type IndexType = DefaultIx;
 
 pub type ClockTree = Graph<Node, (), Directed>;
 
@@ -102,6 +104,16 @@ impl Node {
             Node::Output(_) => 0,
             _ => usize::max_value(),
         }
+    }
+
+    /// Returns true if the block is a source, false otherwise 
+    pub fn is_source(&self) -> bool {
+        self.max_inputs() == 0
+    }
+
+    /// Returns true if the block is a sink, false otherwise
+    pub fn is_sink(&self) -> bool {
+        self.max_outputs() == 0
     }
 }
 

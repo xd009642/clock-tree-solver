@@ -49,12 +49,20 @@ impl Update for App {
 
     fn update(&mut self, event: Self::Msg) {
         match event {
+            Message::Add => {
+                let _ = self.model.add_node(Node::Input(Endpoint{
+                    name: "Input".to_string(),
+                    value: Value::DontCare,
+                    is_internal: false,
+                }));
+                self.has_changed = true;
+            },
             Message::Render => {
                 if self.has_changed {
                     let context = self.widgets.diagram.get_context();
                     context.set_source_rgb(1.0, 1.0, 1.0);
                     context.paint();
-                    self.model.render(&context, 0.0, 0.0, 400.0, 400.0);
+                    self.model.render(&context, 0.0, 0.0, width, height);
                     self.has_changed = false;
                 }
             },
@@ -80,8 +88,10 @@ impl Widget for App {
         let set = Button::new_with_label("Parameters");
         let calc = Button::new_with_label("Calculate");
         let conn = Button::new_with_label("Connect");
-        let mut da = DrawingArea::new();
+        let da = DrawingArea::new();
         da.set_size_request(400, 400);
+        da.set_hexpand(true);
+        da.set_vexpand(true);
         let mut handler = DrawHandler::<DrawingArea>::new().unwrap();
         handler.init(&da);
 
@@ -96,10 +106,12 @@ impl Widget for App {
 
         window.add(&hbox);
 
-        connect!(relm, 
-                 window, 
+        connect!(relm, window, 
                  connect_delete_event(_,_), 
                  return (Some(Message::Quit), Inhibit(false)));
+
+        connect!(relm, add, connect_clicked(_), Message::Add);
+        connect!(relm, add, connect_clicked(_), Message::Render);
 
         connect!(relm, 
                  da, 
