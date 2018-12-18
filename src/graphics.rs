@@ -42,8 +42,8 @@ impl Symbol for ClockTree {
     fn render(&self, ctx: &Context, x: f64, y: f64, width: f64, height: f64) {
         let h_margin = 0.025f64 * width;
         let v_margin = 0.05f64 * height;
-        let n_inputs = self.externals(Direction::Incoming).count();
-        let n_outputs = self.externals(Direction::Outgoing).count();
+        let n_inputs = self.node_count();
+        let n_outputs = self.node_count();
 
         let max_ends = max(n_inputs, n_outputs) as f64;
 
@@ -52,7 +52,7 @@ impl Symbol for ClockTree {
 
         let mut y = v_margin;
         let mut nodes: HashMap<NodeIndex<IndexType>, (f64, f64)> = HashMap::new();
-        for input in self.externals(Direction::Incoming) {
+        for input in self.node_indices() {
             if let Some(ref n) = self.node_weight(input) {
                 // Place internal node, then trace neighbours
                 if n.is_source() {
@@ -65,12 +65,5 @@ impl Symbol for ClockTree {
             }
         }
 
-        for n in self.node_indices() {
-            if !nodes.contains_key(&n) {
-                if let Some(ref temp) = self.node_weight(n) {
-                    temp.render(ctx, width/2.0, height/2.0, 0.05*width, end_height);
-                }
-            }
-        }
     }
 }

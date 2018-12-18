@@ -1,13 +1,13 @@
 use std::fmt;
 use std::hash::{Hash, Hasher};
-use petgraph::{Directed, graph::{DefaultIx, Graph}};
+use petgraph::{Directed, graph::DefaultIx, stable_graph::StableGraph};
 use serde_derive::{Serialize, Deserialize};
 use uom::si::{f64::Frequency, frequency::millihertz};
 
 
 pub type IndexType = DefaultIx;
 
-pub type ClockTree = Graph<Node, (), Directed>;
+pub type ClockTree = StableGraph<Node, (), Directed, IndexType>;
 
 /// Used to represent a frequency value in the system.
 /// Value can either be a constant, an acceptable range or for endpoints

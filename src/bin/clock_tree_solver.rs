@@ -13,7 +13,8 @@ struct Widgets {
     calculate: Button,
     connect: Button,
     set_params: Button,
-    diagram: DrawHandler<DrawingArea>
+    area: DrawingArea,
+    handler: DrawHandler<DrawingArea>,
 }
 
 struct App {
@@ -59,10 +60,11 @@ impl Update for App {
             },
             Message::Render => {
                 if self.has_changed {
-                    let context = self.widgets.diagram.get_context();
+                    let alloc = self.widgets.area.get_allocation();
+                    let context = self.widgets.handler.get_context();
                     context.set_source_rgb(1.0, 1.0, 1.0);
                     context.paint();
-                    self.model.render(&context, 0.0, 0.0, 400.0, 400.0);
+                    self.model.render(&context, 0.0, 0.0, alloc.width as f64, alloc.height as f64);
                     self.has_changed = false;
                 }
             },
@@ -129,7 +131,8 @@ impl Widget for App {
                 set_params: set,
                 connect: conn,
                 calculate: calc,
-                diagram: handler,
+                area: da,
+                handler: handler,
             },
             has_changed: true,
         }
