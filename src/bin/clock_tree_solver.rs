@@ -1,12 +1,25 @@
 use clock_solver::types::*;
 use clock_solver::graphics::*;
 
-use relm::{connect, connect_stream, DrawHandler, Relm, Update, Widget};
+use relm::{connect, connect_stream, DrawHandler, interval, Relm, Update, Widget};
 use gtk::prelude::*;
 use gtk::{Button, DrawingArea, Inhibit, Orientation, Window, WindowType};
 
 use relm_derive::Msg;
 
+/// Messages emitted and handled by the application
+#[derive(Debug, Msg)]
+enum Message {
+    Add,
+    Connect,
+    Set,
+    Remove,
+    Calculate,
+    Render,
+    Quit,
+}
+
+/// Struct containing widgets and any handlers required
 struct Widgets {
     add: Button, 
     remove: Button,
@@ -17,26 +30,22 @@ struct Widgets {
     handler: DrawHandler<DrawingArea>,
 }
 
+/// struct representing the top level application
 struct App {
     /// The clock tree the user's working with
     model: ClockTree,
+    /// Node position map - node index key with (x. y) tuple 
+    node_positions: HashMap<NodeIndex<IndexType>, (f64, f64)>, 
     /// The main window
     window: Window,
     /// Widgets contained in the window
     widgets: Widgets,
-    /// has changed 
-    has_changed: bool,
 }
 
-#[derive(Msg)]
-enum Message {
-    Add,
-    Connect,
-    Set,
-    Remove,
-    Calculate,
-    Render,
-    Quit,
+impl App {
+
+
+
 }
 
 impl Update for App {
@@ -49,6 +58,7 @@ impl Update for App {
     }
 
     fn update(&mut self, event: Self::Msg) {
+        println!("Event: {:?}", event);
         match event {
             Message::Add => {
                 let _ = self.model.add_node(Node::Input(Endpoint{
@@ -56,17 +66,13 @@ impl Update for App {
                     value: Value::DontCare,
                     is_internal: false,
                 }));
-                self.has_changed = true;
             },
             Message::Render => {
-                if self.has_changed {
-                    let alloc = self.widgets.area.get_allocation();
-                    let context = self.widgets.handler.get_context();
-                    context.set_source_rgb(1.0, 1.0, 1.0);
-                    context.paint();
-                    self.model.render(&context, 0.0, 0.0, alloc.width as f64, alloc.height as f64);
-                    self.has_changed = false;
-                }
+                let alloc = self.widgets.area.get_allocation();
+                let context = self.widgets.handler.get_context();
+                context.set_source_rgb(1.0, 1.0, 1.0);
+                context.paint();
+                self.model.render(&context, 0.0, 0.0, alloc.width as f64, alloc.height as f64);
             },
             Message::Quit => gtk::main_quit(),
             _ => {},
@@ -122,7 +128,7 @@ impl Widget for App {
 
         window.show_all();
 
-        App {
+        let mut app = App {
             model: model,
             window: window,
             widgets: Widgets {
@@ -134,8 +140,9 @@ impl Widget for App {
                 area: da,
                 handler: handler,
             },
-            has_changed: true,
-        }
+        };
+        app.update(Message::Render);
+        app
     }
 }
 
